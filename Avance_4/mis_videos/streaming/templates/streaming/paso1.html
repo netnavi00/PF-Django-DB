@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro-Gol Watch - Registro</title>
+    <link rel="stylesheet" href="{% static 'streaming/css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Registro de Usuario</h2>
+        <form id="formUsuario" method="POST" action="{% url 'procesar_paso1' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_nomina">ID (Número de Nómina):</label>
+                <input type="text" id="id_nomina" name="id_nomina" required>
+                <div id="error_nomina" class="error-msg" style="color:red; display:none;">
+                    Nómina en formato incorrecto. Debe capturar solo números y letras.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="nombre">Nombre Completo:</label>
+                <input type="text" id="nombre" name="nombre" required>
+                <div id="error_nombre" class="error-msg" style="color:red; display:none;">
+                    Nombre de usuario en formato incorrecto. Debe capturar solo letras.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cantidad">Cantidad de Videos a Subir:</label>
+                <input type="number" id="cantidad" name="cantidad" required>
+                <div id="error_cantidad" class="error-msg" style="color:red; display:none;">
+                    Cantidad de videos en formato incorrecto. Debe capturar solo números.
+                </div>
+            </div>
+
+            <button type="button" id="btnAceptar">Aceptar</button>
+        </form>
+    </div>
+
+    <script>
+        // Expresiones regulares para validación en tiempo real (al salir del input)
+        const regexAlfanumerico = /^[A-Za-z0-9\s]+$/;
+        const regexAlfabetico = /^[A-Za-z\s]+$/;
+        const regexNumerico = /^[0-9]+$/;
+
+        const inputNomina = document.getElementById('id_nomina');
+        const inputNombre = document.getElementById('nombre');
+        const inputCantidad = document.getElementById('cantidad');
+
+        // Validaciones onblur (al salir del cuadro de captura)
+        inputNomina.addEventListener('blur', () => {
+            if (!regexAlfanumerico.test(inputNomina.value.strip ? inputNomina.value.strip() : inputNomina.value)) {
+                document.getElementById('error_nomina').style.display = 'block';
+            } else {
+                document.getElementById('error_nomina').style.display = 'none';
+            }
+        });
+
+        inputNombre.addEventListener('blur', () => {
+            if (!regexAlfabetico.test(inputNombre.value)) {
+                document.getElementById('error_nombre').style.display = 'block';
+            } else {
+                document.getElementById('error_nombre').style.display = 'none';
+            }
+        });
+
+        inputCantidad.addEventListener('blur', () => {
+            if (!regexNumerico.test(inputCantidad.value) || parseInt(inputCantidad.value) <= 0) {
+                document.getElementById('error_cantidad').style.display = 'block';
+            } else {
+                document.getElementById('error_cantidad').style.display = 'none';
+            }
+        });
+
+        // Botón Aceptar y Ventana de Confirmación Emergente
+        document.getElementById('btnAceptar').addEventListener('click', () => {
+            // Verificar que no haya errores visibles antes de confirmar
+            if (document.getElementById('error_nomina').style.display === 'block' ||
+                document.getElementById('error_nombre').style.display === 'block' ||
+                document.getElementById('error_cantidad').style.display === 'block' ||
+                inputNomina.value === '' || inputNombre.value === '' || inputCantidad.value === '') {
+                alert('Por favor, corrija los campos incorrectos antes de continuar.');
+                return;
+            }
+
+            // Mensaje de validación exacto requerido
+            const mensaje = `Bienvenido ${inputNombre.value}, tu número de nómina es ${inputNomina.value} y estás intentando subir ${inputCantidad.value} videos.\n\n¿Es correcta la información?`;
+            
+            if (confirm(mensaje)) {
+                document.getElementById('formUsuario').submit();
+            }
+        });
+    </script>
+</body>
+</html>

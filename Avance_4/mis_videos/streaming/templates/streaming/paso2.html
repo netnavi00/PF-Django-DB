@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro-Gol Watch - Subir Videos</title>
+    <link rel="stylesheet" href="{% static 'streaming/css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Captura de Videos</h2>
+        <form id="formVideos" method="POST" action="{% url 'guardar_videos' %}">
+            {% csrf_token %}
+            <input type="hidden" name="id_nomina" value="{{ id_nomina }}">
+            <input type="hidden" name="nombre_usuario" value="{{ nombre_usuario }}">
+            <input type="hidden" name="cantidad" value="{{ cantidad }}">
+
+            {% for i in rango_videos %}
+            <div class="video-card">
+                <h4>Video {{ i }}</h4>
+                
+                <div class="form-group">
+                    <label>Título del video:</label>
+                    <input type="text" name="titulo_{{ i }}" class="val-alfanumerico" required>
+                    <div class="error-msg" style="color:red; display:none;">Título del video en formato incorrecto. Debe capturar solo números y letras.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre del video:</label>
+                    <input type="text" name="nombre_video_{{ i }}" class="val-alfanumerico" required>
+                    <div class="error-msg" style="color:red; display:none;">Nombre del video en formato incorrecto. Debe capturar solo números y letras.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Extensión del video:</label>
+                    <input type="text" name="extension_{{ i }}" class="val-alfanumerico" placeholder="ej. mp4, mov" required>
+                    <div class="error-msg" style="color:red; display:none;">Extensión del video en formato incorrecto. Debe capturar solo números y letras.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tamaño (MB, máximo 3):</label>
+                    <input type="text" name="tamano_{{ i }}" class="val-tamano" required>
+                    <div class="error-msg-formato" style="color:red; display:none;">Tamaño del video en formato incorrecto. Debe capturar solo números.</div>
+                    <div class="error-msg-limite" style="color:red; display:none;">El archivo no debe pesar más de 3 MB</div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <button type="submit" id="btnGuardar">Guardar</button>
+        </form>
+    </div>
+
+    <script>
+        const regexAlfanumerico = /^[A-Za-z0-9\s]+$/;
+
+        // Asignar validación onblur dinámicamente a todos los campos alfanuméricos de los videos
+        document.querySelectorAll('.val-alfanumerico').forEach(input => {
+            input.addEventListener('blur', () => {
+                const errorDiv = input.nextElementSibling;
+                if (!regexAlfanumerico.test(input.value)) {
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+            });
+        });
+
+        // Asignar validación onblur para los tamaños y control de excepciones en el lado del cliente
+        document.querySelectorAll('.val-tamano').forEach(input => {
+            input.addEventListener('blur', () => {
+                const errorFormato = input.parentElement.querySelector('.error-msg-formato');
+                const errorLimite = input.parentElement.querySelector('.error-msg-limite');
+                
+                const valor = input.value.trim();
+                const numero = Float(valor); // Simulación de control numérico
+
+                if (isNaN(valor) || valor === '') {
+                    errorFormato.style.display = 'block';
+                    errorLimite.style.display = 'none';
+                } else {
+                    errorFormato.style.display = 'none';
+                    const tamanoFloat = parseFloat(valor);
+                    if (tamanoFloat < 0 || tamanoFloat > 3) {
+                        errorLimite.style.display = 'block';
+                    } else {
+                        errorLimite.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        // Validar antes de enviar el formulario
+        document.getElementById('formVideos').addEventListener('submit', (e) => {
+            let tieneErrores = false;
+            document.querySelectorAll('.error-msg, .error-msg-formato, .error-msg-limite').forEach(div => {
+                if (div.style.display === 'block') {
+                    tieneErrores = true;
+                }
+            });
+
+            if (tieneErrores) {
+                e.preventDefault();
+                alert('Por favor, corrija los errores en los datos de los videos antes de guardar.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -2,8 +2,13 @@ import os
 import sys
 import re
 import django
+from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Cargar las variables de entorno del archivo .env antes de inicializar Django
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
+
 # =====================================================================
 # CONFIGURACIÓN DE ENTORNO DJANGO (Permite usar los modelos fuera del servidor web)
 # =====================================================================

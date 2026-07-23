@@ -40,10 +40,10 @@ def guardar_videos(request):
         nombre_usuario = request.POST.get('nombre_usuario', '')
         cantidad = int(request.POST.get('cantidad', 0))
 
-        # 1. Validar que no falten datos ni archivos
+        # 1. Validaciones
         for i in range(1, cantidad + 1):
             archivo_obj = request.FILES.get(f'archivo_{i}')
-            nombre_vid = request.POST.get(f'nombre_video_{i}', '').strip()
+            titulo_vid = request.POST.get(f'titulo_{i}', '').strip()  # <- Leemos el título
 
             # A) Validar si falta el archivo
             if not archivo_obj:
@@ -52,17 +52,17 @@ def guardar_videos(request):
                     'nombre_usuario': nombre_usuario,
                     'cantidad': cantidad,
                     'rango_videos': range(1, cantidad + 1),
-                    'error': f'Revisar formulario: Falta adjuntar el archivo de video para el elemento #{i}.'
+                    'error': f'Revisar formulario: Falta adjuntar el archivo para el video #{i}.'
                 })
 
-            # B) Validar si falta el nombre/título del video
-            if not nombre_vid:
+            # B) Validar si falta el título
+            if not titulo_vid:
                 return render(request, 'streaming/paso2.html', {
                     'id_nomina': id_nomina,
                     'nombre_usuario': nombre_usuario,
                     'cantidad': cantidad,
                     'rango_videos': range(1, cantidad + 1),
-                    'error': f'Revisar formulario: El título o nombre para el video #{i} no puede estar vacío.'
+                    'error': f'Revisar formulario: El título del video #{i} no puede estar vacío.'
                 })
 
             # C) Validar Extensión
@@ -73,10 +73,10 @@ def guardar_videos(request):
                     'nombre_usuario': nombre_usuario,
                     'cantidad': cantidad,
                     'rango_videos': range(1, cantidad + 1),
-                    'error': f'Revisar archivo: "{archivo_obj.name}" no es un video permitido. Solo se aceptan extensiones: {", ".join(EXTENSIONES_PERMITIDAS)}.'
+                    'error': f'Revisar archivo: "{archivo_obj.name}" no es un video permitido.'
                 })
 
-            # D) Validar Tamaño (Máximo 3 MB)
+            # D) Validar Tamaño (3 MB)
             if archivo_obj.size > MAX_BYTES:
                 tamano_actual_mb = round(archivo_obj.size / (1024 * 1024), 2)
                 return render(request, 'streaming/paso2.html', {
@@ -84,46 +84,39 @@ def guardar_videos(request):
                     'nombre_usuario': nombre_usuario,
                     'cantidad': cantidad,
                     'rango_videos': range(1, cantidad + 1),
-                    'error': f'Revisar archivo: "{archivo_obj.name}" pesa {tamano_actual_mb} MB. El límite máximo permitido es de {MAX_TAMANO_MB} MB.'
-                })        
+                    'error': f'Revisar archivo: "{archivo_obj.name}" pesa {tamano_actual_mb} MB (Máximo 3 MB).'
+                })
 
         # 2. Buscar usuario
         try:
             usuario = TBL_Usuario.objects.get(id_nomina=id_nomina)
-            print(f"Usuario encontrado: {usuario.nombre}")
         except TBL_Usuario.DoesNotExist:
-            print("❌ ERROR: El usuario no existe con esa nómina.")
             usuario = None
 
-        # 3. Guardar en BD
+        # 3. Guardar registros en BD
         for i in range(1, cantidad + 1):
             archivo_obj = request.FILES.get(f'archivo_{i}')
-            nombre_vid = request.POST.get(f'nombre_video_{i}')
-
-            print(f"Video {i}: archivo={archivo_obj}, nombre={nombre_vid}")
+            titulo_vid = request.POST.get(f'titulo_{i}', '').strip()
 
             if archivo_obj:
                 ext = archivo_obj.name.split('.')[-1].lower()[:5]
 
-                # Instanciar el objeto
+                # Asignamos el 'titulo_vid' al campo 'nombre' del modelo/tabla
                 video = TBL_Video(
-                    nombre=nombre_vid if nombre_vid else archivo_obj.name,
+                    nombre=titulo_vid if titulo_vid else archivo_obj.name,
                     extension=ext,
-                    tamano=int(archivo_obj.size / (1024 * 1024)),  # MB
+                    tamano=int(archivo_obj.size / (1024 * 1024)),
                     archivo=archivo_obj
                 )
                 
-                # Dispara las validaciones internas de Django
                 try:
                     video.full_clean()
                     video.save()
-                    print(f"✅ Video creado en BD con ID: {video.id_video}")
 
                     if usuario:
                         TBL_Usuario_Video.objects.create(id_usuario=usuario, id_video=video)
-                        print("✅ Relación TBL_Usuario_Video creada correctamente")
                 except ValidationError as e:
-                    print(f"❌ Error de validación en video {i}: {e}")
+                    print(f"Error al guardar video {i}: {e}")
 
         return render(request, 'streaming/exito.html', {'mensaje': '¡Videos guardados con éxito!'})
 

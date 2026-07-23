@@ -4,7 +4,7 @@ Este repositorio contiene el desarrollo modular de los 4 Avances para la gestió
 ---
 
 ## 📁 Estructura del Proyecto
-
+``` text
 El proyecto está organizado en 4 entregas independientes dentro del mismo directorio raíz:
 
 Proyecto Final/
@@ -19,6 +19,7 @@ Proyecto Final/
 ├── respaldo_db.sql        # Exportación/Respaldo de la base de datos PostgreSQL
 └── README.md              # Documentación general del proyecto
 
+```
 
 ### 🛠️ Tecnologías Utilizadas
 Lenguaje: Python 3.12+
@@ -54,11 +55,6 @@ DB_HOST=localhost
 DB_PORT=5432
 SECRET_KEY=tu_django_secret_key
 
-
-5. (Opcional)--  Restaurar Base de Datos (PostgreSQL)
-Importar el archivo respaldo_db.sql mediante pgAdmin 4 o la consola de PostgreSQL:
-psql -U postgres -d Pro_Gol < respaldo_db.sql
-
 ##### 🚀 Ejecución del Proyecto (Avance 4 - Web)
 
 Para poner en marcha la interfaz web:
@@ -69,7 +65,7 @@ cd Avance_4/mis_videos
 # 2. Ejecutar el servidor de desarrollo
 python manage.py runserver
 
-Abre tu navegador e ingresa a: http://127.0.0.1:8000/
+Abre tu navegador e ingresa a: http://127.0.0.1:8000/ o el puerto que marque en terminal.
 
 ###### 📌 Resumen de Avances
 Avance 1: Modelado de clases POO (Usuario, Video) y menú interactivo en consola.

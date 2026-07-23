@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Videos y Usuarios</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f6f9; 
+            margin: 0;
+            padding: 30px; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        .header-title {
+            color: #1e293b; 
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+        .video-card { 
+            background: #ffffff; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+        }
+        .video-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 12px; 
+            margin-bottom: 15px; 
+        }
+        .video-title { 
+            font-size: 1.2rem; 
+            font-weight: 600; 
+            color: #2c3e50; 
+            margin: 0; 
+        }
+        .user-badge { 
+            background: #e0f2fe; 
+            color: #0369a1; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+        }
+        video { 
+            width: 100%; 
+            border-radius: 8px; 
+            background: #000; 
+            margin-bottom: 15px; 
+            max-height: 450px;
+        }
+        
+        /* Grid de metadata */
+        .info-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 12px; 
+            background: #f8fafc; 
+            padding: 15px; 
+            border-radius: 6px; 
+            font-size: 0.9rem; 
+        }
+        .info-item { 
+            color: #475569; 
+        }
+        .info-item strong { 
+            color: #1e293b; 
+            display: block; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-bottom: 3px;
+        }
+        .no-video-msg {
+            color: #ef4444; 
+            font-style: italic;
+            padding: 20px;
+            background: #fef2f2;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="header-title">Monitoreo de Videos por Usuario</h2>
+
+   {% for video in videos %}
+    <div class="video-card">
+        <div class="video-header">
+            <h3 class="video-title">{{ video.nombre }}</h3>
+            
+            <!-- Mostramos los usuarios asociados si existen -->
+            <div>
+                {% for rel in video.tbl_usuario_video_set.all %}
+                    <span class="user-badge">ID Usuario: {{ rel.id_usuario.id_usuario }}</span>
+                {% empty %}
+                    <span class="user-badge" style="background:#f1f5f9; color:#64748b;">Sin Usuario</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if video.archivo %}
+            <video controls preload="metadata">
+                <source src="{{ video.archivo.url }}" type="video/mp4">
+            </video>
+        {% else %}
+            <div class="no-video-msg">Sin archivo de video asociado.</div>
+        {% endif %}
+
+        <div class="info-grid">
+            <div class="info-item">
+            <strong>Usuario</strong>
+            {% if video.tbl_usuario_video_set.all %}
+                {% for rel in video.tbl_usuario_video_set.all %}
+                    {{ rel.id_usuario.nombre }} {{ rel.id_usuario.apellido }}
+                {% endfor %}
+            {% else %}
+                <span style="color: #94a3b8; font-style: italic;">Sin registro en tabla intermedia</span>
+            {% endif %}
+        </div>
+            <div class="info-item">
+                <strong>Formato</strong>
+                .{{ video.extension|default:"mp4" }}
+            </div>
+            <div class="info-item">
+                <strong>Tamaño</strong>
+                {{ video.tamano|default:"N/A" }} KB
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p>No hay videos en la base de datos.</p>
+{% endfor %}
+</div>
+
+</body>
+</html>

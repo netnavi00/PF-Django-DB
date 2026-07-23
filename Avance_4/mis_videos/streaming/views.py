@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.shortcuts import render
 from .models import TBL_Usuario, TBL_Video, TBL_Usuario_Video
 
 # Formatos de video permitidos
@@ -121,3 +122,9 @@ def guardar_videos(request):
         return render(request, 'streaming/exito.html', {'mensaje': '¡Videos guardados con éxito!'})
 
     return redirect('paso1')
+
+def lista_videos(request):
+    # Traemos los videos Y pre-cargamos la tabla intermedia junto con los usuarios
+    videos = TBL_Video.objects.prefetch_related('tbl_usuario_video_set__id_usuario').all().order_by('-id_video')
+    
+    return render(request, 'streaming/lista.html', {'videos': videos})

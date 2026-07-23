@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import FileExtensionValidator
 
 # a. Tabla para guardar los datos del usuario
 class TBL_Usuario(models.Model):
@@ -21,8 +22,10 @@ class TBL_Video(models.Model):
     # Tamaño del video numérico
     tamano = models.IntegerField() 
     # Guarda el arhcivo de video
-    archivo = models.FileField(upload_to='videos/', null=True, blank=True)
-
+    archivo = models.FileField(
+        upload_to='videos/',
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'mkv', 'webm'])] # <- Restricción
+    )
     def __str__(self):
         return self.nombre
 

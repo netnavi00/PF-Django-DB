@@ -26,12 +26,6 @@
                     <div class="error-msg" style="color:red; display:none;">Título del video en formato incorrecto. Debe capturar solo números y letras.</div>
                 </div>
 
-                <div class="form-group">
-                    <label>Nombre del video:</label>
-                    <input type="text" name="nombre_video_{{ i }}" class="val-alfanumerico" required>
-                    <div class="error-msg" style="color:red; display:none;">Nombre del video en formato incorrecto. Debe capturar solo números y letras.</div>
-                </div>
-
                 <!-- Campo para subir el archivo binario real -->
                 <div class="form-group">
                     <label>Archivo de Video (.mp4, .mkv, etc.):</label>
@@ -48,6 +42,12 @@
             {% endfor %}
 
             <button type="submit" id="btnGuardar">Guardar</button>
+
+            {% if error %}
+            <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 12px; margin-bottom: 20px; border-radius: 5px; font-weight: bold;">
+                ⚠️ {{ error }}
+            </div>
+            {% endif %}
         </form>
     </div>
 

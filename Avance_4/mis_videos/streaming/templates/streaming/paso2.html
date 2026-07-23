@@ -9,14 +9,15 @@
 <body>
     <div class="container">
         <h2>Captura de Videos</h2>
-        <form id="formVideos" method="POST" action="{% url 'guardar_videos' %}">
+        <!-- Agregado enctype="multipart/form-data" -->
+        <form id="formVideos" method="POST" action="{% url 'guardar_videos' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="id_nomina" value="{{ id_nomina }}">
             <input type="hidden" name="nombre_usuario" value="{{ nombre_usuario }}">
             <input type="hidden" name="cantidad" value="{{ cantidad }}">
 
             {% for i in rango_videos %}
-            <div class="video-card">
+            <div class="video-card" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
                 <h4>Video {{ i }}</h4>
                 
                 <div class="form-group">
@@ -31,10 +32,10 @@
                     <div class="error-msg" style="color:red; display:none;">Nombre del video en formato incorrecto. Debe capturar solo números y letras.</div>
                 </div>
 
+                <!-- Campo para subir el archivo binario real -->
                 <div class="form-group">
-                    <label>Extensión del video:</label>
-                    <input type="text" name="extension_{{ i }}" class="val-alfanumerico" placeholder="ej. mp4, mov" required>
-                    <div class="error-msg" style="color:red; display:none;">Extensión del video en formato incorrecto. Debe capturar solo números y letras.</div>
+                    <label>Archivo de Video (.mp4, .mkv, etc.):</label>
+                    <input type="file" name="archivo_{{ i }}" accept="video/*" required>
                 </div>
 
                 <div class="form-group">
@@ -53,7 +54,7 @@
     <script>
         const regexAlfanumerico = /^[A-Za-z0-9\s]+$/;
 
-        // Asignar validación onblur dinámicamente a todos los campos alfanuméricos de los videos
+        // Validar campos alfanuméricos
         document.querySelectorAll('.val-alfanumerico').forEach(input => {
             input.addEventListener('blur', () => {
                 const errorDiv = input.nextElementSibling;
@@ -65,21 +66,20 @@
             });
         });
 
-        // Asignar validación onblur para los tamaños y control de excepciones en el lado del cliente
+        // Validar tamaño en MB
         document.querySelectorAll('.val-tamano').forEach(input => {
             input.addEventListener('blur', () => {
                 const errorFormato = input.parentElement.querySelector('.error-msg-formato');
                 const errorLimite = input.parentElement.querySelector('.error-msg-limite');
                 
                 const valor = input.value.trim();
-                const numero = Float(valor); // Simulación de control numérico
 
                 if (isNaN(valor) || valor === '') {
                     errorFormato.style.display = 'block';
                     errorLimite.style.display = 'none';
                 } else {
                     errorFormato.style.display = 'none';
-                    const tamanoFloat = parseFloat(valor);
+                    const tamanoFloat = parseFloat(valor); // Corregido: parseFloat
                     if (tamanoFloat < 0 || tamanoFloat > 3) {
                         errorLimite.style.display = 'block';
                     } else {
@@ -89,7 +89,7 @@
             });
         });
 
-        // Validar antes de enviar el formulario
+        // Validar submit
         document.getElementById('formVideos').addEventListener('submit', (e) => {
             let tieneErrores = false;
             document.querySelectorAll('.error-msg, .error-msg-formato, .error-msg-limite').forEach(div => {

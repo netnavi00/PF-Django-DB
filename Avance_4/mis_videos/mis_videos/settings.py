@@ -86,6 +86,8 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
+        'MEDIA_URL': '/media/',
+        'MEDIA_ROOT': os.path.join(BASE_DIR, 'media')
     }
 }
 

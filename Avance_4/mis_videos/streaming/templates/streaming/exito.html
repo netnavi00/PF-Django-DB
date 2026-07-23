@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro-Gol Watch - Éxito</title>
+    <link rel="stylesheet" href="{% static 'streaming/css/style.css' %}">
+</head>
+<body>
+    <div class="container" style="text-align: center; margin-top: 50px;">
+        <h2>🎉 {{ mensaje }}</h2>
+        <p>El video y la relación de usuario se han registrado correctamente en la Base de Datos.</p>
+        <br>
+        <a href="{% url 'paso1' %}">Registrar otro usuario / Subir más videos</a>
+    </div>
+</body>
+</html>

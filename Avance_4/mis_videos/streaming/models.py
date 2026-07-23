@@ -20,6 +20,8 @@ class TBL_Video(models.Model):
     extension = models.CharField(max_length=5) 
     # Tamaño del video numérico
     tamano = models.IntegerField() 
+    # Guarda el arhcivo de video
+    archivo = models.FileField(upload_to='videos/', null=True, blank=True)
 
     def __str__(self):
         return self.nombre

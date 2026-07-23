@@ -1,3 +1,5 @@
+from urllib import request
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import TBL_Usuario, TBL_Video, TBL_Usuario_Video
@@ -28,40 +30,42 @@ def procesar_paso1(request):
 # Recibe los N videos, los valida y los guarda en la Base de Datos PostgreSQL
 def guardar_videos(request):
     if request.method == 'POST':
+        print("--- INICIANDO GUARDADO DE VIDEOS ---")
+        print("POST recibi-do:", request.POST)
+        print("FILES recibi-dos:", request.FILES)  # <- Si esto está vacío {}, falta enctype en el HTML
+
         id_nomina = request.POST.get('id_nomina')
-        nombre_usuario = request.POST.get('nombre_usuario')
-        cantidad = int(request.POST.get('cantidad'))
+        cantidad = int(request.POST.get('cantidad', 0))
 
         try:
-            # 1. Guardar o actualizar el usuario en la BD
-            usuario_db, created = TBL_Usuario.objects.update_or_create(
-                id_nomina=id_nomina,
-                defaults={'nombre': nombre_usuario}
-            )
+            usuario = TBL_Usuario.objects.get(id_nomina=id_nomina)
+            print(f"Usuario encontrado: {usuario.nombre}")
+        except TBL_Usuario.DoesNotExist:
+            print("❌ ERROR: El usuario no existe con esa nómina.")
+            usuario = None
 
-            # 2. Ciclo iterativo para extraer y guardar cada uno de los N videos
-            for i in range(1, cantidad + 1):
-                titulo = request.POST.get(f'titulo_{i}').strip()
-                nombre_video = request.POST.get(f'nombre_video_{i}').strip()
-                extension = request.POST.get(f'extension_{i}').strip()
-                tamano = int(float(request.POST.get(f'tamano_{i}').strip()))
+        for i in range(1, cantidad + 1):
+            archivo_obj = request.FILES.get(f'archivo_{i}')
+            nombre_vid = request.POST.get(f'nombre_video_{i}')
 
-                # Guardamos el video en la tabla TBL_Video
-                video_db = TBL_Video.objects.create(
-                    nombre=nombre_video,
-                    extension=extension if extension.startswith('.') else f".{extension}",
-                    tamano=tamano
+            print(f"Video {i}: archivo={archivo_obj}, nombre={nombre_vid}")
+
+            if archivo_obj:
+                ext = archivo_obj.name.split('.')[-1].lower()[:5]
+                
+                # Crear registro
+                video = TBL_Video.objects.create(
+                    nombre=nombre_vid if nombre_vid else archivo_obj.name,
+                    extension=ext,
+                    tamano=int(archivo_obj.size / (1024 * 1024)), # MB
+                    archivo=archivo_obj
                 )
+                print(f"✅ Video creado en BD con ID: {video.id_video}")
 
-                # Creamos el registro en la tabla de relación intermedia
-                TBL_Usuario_Video.objects.create(
-                    id_usuario=usuario_db,
-                    id_video=video_db
-                )
+                if usuario:
+                    TBL_Usuario_Video.objects.create(id_usuario=usuario, id_video=video)
+                    print("✅ Relación TBL_Usuario_Video creada correctamente")
 
-            return HttpResponse("<h2>[ÉXITO] Toda la información ha sido almacenada correctamente en PostgreSQL.</h2><br><a href='/'>Volver al inicio</a>")
-
-        except Exception as e:
-            return HttpResponse(f"<h2>[ERROR] Ocurrió un problema al guardar en la base de datos: {e}</h2>")
+        return render(request, 'streaming/exito.html', {'mensaje': '¡Videos guardados con éxito!'})
 
     return redirect('paso1')
